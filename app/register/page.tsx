@@ -35,7 +35,7 @@ export default function RegisterPage() {
         try {
             await api.post("/auth/register", form);
             toast.success("Cadastro realizado com sucesso!");
-            router.push("/leases");
+            router.push("/login");
         } catch (error: any) {
             toast.error("Erro ao registrar", {
                 description: error?.body?.message || error.message,
