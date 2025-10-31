@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { toast } from "react-toastify";
 import { api } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
 
@@ -14,21 +14,66 @@ export default function LoginPage() {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // Validação dinâmica
+  const validateField = (field: string, value: string) => {
+    if (field === "email") {
+      const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      setErrors((prev) => ({
+        ...prev,
+        email: isValidEmail ? "" : "Insira um email válido.",
+      }));
+    }
+
+    if (field === "password") {
+      setErrors((prev) => ({
+        ...prev,
+        password:
+          value.length < 8
+            ? "A senha deve conter pelo menos 8 caracteres."
+            : "",
+      }));
+    }
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    validateField("email", value);
+  };
+
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    validateField("password", value);
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!email || errors.email) {
+      toast.error("Por favor, insira um email válido.");
+      return;
+    }
+    if (!password || errors.password) {
+      toast.error("A senha deve ter pelo menos 8 caracteres.");
+      return;
+    }
+
     setLoading(true);
     try {
       const data: any = await api.post("/auth/login", { email, password });
+
+      if (!data || !data.token) {
+        throw new Error("Resposta inválida do backend: token ausente");
+      }
+
       login(data.token, data.user);
       toast.success("Login realizado com sucesso!");
       setTimeout(() => router.push("/leases"), 800);
     } catch (error: any) {
-      toast.error("Erro ao fazer login!", {
-        description: error?.body?.message || error.message,
-      });
+      toast.error("Erro ao fazer login!");
     } finally {
       setLoading(false);
     }
@@ -51,7 +96,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form onSubmit={submit} className="space-y-4 mt-8">
+        <form onSubmit={submit} className="space-y-5 mt-8">
           <div>
             <Label htmlFor="email" className="text-zinc-300 mb-3">
               Email
@@ -60,10 +105,15 @@ export default function LoginPage() {
               id="email"
               type="email"
               placeholder="Digite seu email"
-              className="bg-zinc-800 border-zinc-700 text-white focus-visible:ring-indigo-500"
+              className={`bg-zinc-800 border text-white focus-visible:ring-indigo-500 ${
+                errors.email ? "border-red-500" : "border-zinc-700"
+              }`}
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => handleEmailChange(e.target.value)}
             />
+            {errors.email && (
+              <p className="text-red-400 text-sm mt-1">{errors.email}</p>
+            )}
           </div>
 
           <div>
@@ -74,10 +124,15 @@ export default function LoginPage() {
               id="password"
               type="password"
               placeholder="Digite sua senha"
-              className="bg-zinc-800 border-zinc-700 text-white focus-visible:ring-indigo-500"
+              className={`bg-zinc-800 border text-white focus-visible:ring-indigo-500 ${
+                errors.password ? "border-red-500" : "border-zinc-700"
+              }`}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => handlePasswordChange(e.target.value)}
             />
+            {errors.password && (
+              <p className="text-red-400 text-sm mt-1">{errors.password}</p>
+            )}
           </div>
 
           <Button

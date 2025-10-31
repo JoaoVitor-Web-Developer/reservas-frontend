@@ -2,11 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle, User, Phone, Mail, Calendar, Edit, X, Clock, MapPin } from "@deemlol/next-icons";
+import { CheckCircle, Phone, Mail, Calendar, Edit, X, Clock, MapPin } from "@deemlol/next-icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/api";
+import { toast } from 'react-toastify';
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<any>(null);
@@ -26,7 +27,7 @@ export default function ProfilePage() {
         setReservations(r);
         setForm({ name: p.name, email: p.email, phone: p.phone });
       } catch (e) {
-        console.error(e);
+        toast.error("Erro ao buscar seus dados");
       } finally {
         setLoading(false);
       }
@@ -40,7 +41,7 @@ export default function ProfilePage() {
       setProfile(updated);
       setEditing(false);
     } catch (err: any) {
-      alert(err?.body?.message || err.message || "Erro ao atualizar");
+      toast.error(err?.body?.message || err.message || "Erro ao atualizar");
     }
   };
 
@@ -68,7 +69,7 @@ export default function ProfilePage() {
         prev.map((r) => (r.id === id ? { ...r, status: "CANCELED" } : r))
       );
     } catch (err: any) {
-      alert(err?.body?.message || "Erro ao cancelar a reserva");
+      toast.error(err?.body?.message || "Erro ao cancelar a reserva");
     }
   };
 
@@ -81,7 +82,7 @@ export default function ProfilePage() {
         prev.map((r) => (r.id === id ? { ...r, status: "CONFIRMED" } : r))
       );
     } catch (err: any) {
-      alert(err?.body?.message || "Erro ao confirmar a reserva");
+      toast.error(err?.body?.message || "Erro ao confirmar a reserva");
     }
   };
 
@@ -100,7 +101,6 @@ export default function ProfilePage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-5xl bg-zinc-800/30 border border-zinc-800 rounded-2xl p-8 shadow-2xl backdrop-blur-lg"
       >
-        {/* HEADER DO PERFIL */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-2xl font-bold">
@@ -129,7 +129,6 @@ export default function ProfilePage() {
           </Button>
         </div>
 
-        {/* SEÇÃO DE PERFIL E RESERVAS */}
         <AnimatePresence mode="wait">
           {!editing ? (
             <motion.div
@@ -257,7 +256,6 @@ export default function ProfilePage() {
               </div>
             </motion.div>
           ) : (
-            /* FORMULÁRIO DE EDIÇÃO */
             <motion.form
               key="edit"
               onSubmit={save}

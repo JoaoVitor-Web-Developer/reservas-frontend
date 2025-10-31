@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { toast } from 'react-toastify';
 import LeaseGallery from "@/components/LeaseGallery";
 import { Calendar, Clock, MapPin, Star } from "lucide-react";
 
@@ -36,7 +37,7 @@ export default function LeaseDetail() {
   const reserve = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      alert("Faça login para reservar");
+      toast.warn("Faça login para reservar");
       return;
     }
     try {
@@ -47,7 +48,7 @@ export default function LeaseDetail() {
       });
       router.push("/reservations/confirm");
     } catch (err: any) {
-      alert(err?.body?.message || err.message || "Erro ao reservar");
+      toast.error(err?.body?.message || err.message || "Erro ao reservar");
     }
   };
 

@@ -2,7 +2,12 @@ export const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:80
 
 async function request(path: string, opts: RequestInit = {}) {
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  const headers: any = { "Content-Type": "application/json", ...(opts.headers || {}) };
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(opts.headers || {}),
+  };
+
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
   const res = await fetch(`${API_BASE}${path}`, {
@@ -10,16 +15,20 @@ async function request(path: string, opts: RequestInit = {}) {
     headers,
   });
 
-  const text = await res.text();
-  let data;
-  try { data = text ? JSON.parse(text) : null } catch (e) { data = text; }
+  let data: any = null;
+  try {
+    data = await res.json();
+  } catch {
+    data = null;
+  }
 
   if (!res.ok) {
-    const error: any = new Error(data?.message || res.statusText || "Request error");
+    const error: any = new Error(data?.message || res.statusText || "Erro na requisição");
     error.status = res.status;
     error.body = data;
     throw error;
   }
+
   return data;
 }
 

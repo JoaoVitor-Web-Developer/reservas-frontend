@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "react-toastify";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { Input } from "@/components/ui/input";
@@ -50,7 +50,7 @@ export default function CreateLeaseStepByStep() {
       toast.success("Local criado com sucesso!");
       setTimeout(() => router.push("/leases"), 1000);
     } catch (e: any) {
-      toast.error("Erro ao criar locação", { description: e.message });
+      toast.error("Erro ao criar locação");
     } finally {
       setLoading(false);
     }
